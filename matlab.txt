@@ -1,0 +1,42 @@
+clc
+ clear all
+ close all
+% Input MRI image
+  I     = imread('slp.jpeg');
+  Inp   = im2double(I); % Ground truth (original image)
+  [R C] = size(Inp);
+% 2DFT of MRI image
+  F     = fft2(Inp); 
+% Total number of measurements
+  N     = R*C;
+% Consider less measurements than original (M<N)
+  M     = round( N*0.7); 
+% Number of aliased images we want i.e., T
+  T     = 10000;
+% Creating aliased images i.e A_im ( each cell in A_im is one aliased image)
+  for it = 1 :1:T;
+% Create a random vector
+  x     = zeros(N,1);
+  x_ind = randi(N,M,1);   % non-zero entries
+% Ensure M-sparseness by cancelling repetations of the same index
+  done  = 0;
+
+while done == 0
+    done = 1;
+    x_ind = sort(x_ind);
+    for i = 1:M-1
+        if x_ind(i) == x_ind(i+1)
+            x_ind(i+1) = randi(N,1,1);
+            done = 0;
+        end;
+    end;
+end;
+  x(x_ind) =  F(x_ind); 
+  F_modi   =  reshape(x,[R,C]);
+  
+  %  Inverse 2DFT of MRI image
+ 
+  A_im{it} = abs(ifft2(F_modi));
+  
+ 
+  end
